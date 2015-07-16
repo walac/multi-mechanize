@@ -39,6 +39,7 @@ Here is a sample ``config.cfg`` file showing all possible options, defining 2 gr
     progress_bar = on
     console_logging = off
     xml_report = off
+    drop_expired = True
     results_database = sqlite:///my_project/results.db
     post_run_script = python my_project/foo.py
 
@@ -62,6 +63,7 @@ The following settings/options are available in the ``[global]`` config section:
 * ``progress_bar``: turn on/off console progress bar during test run [optional, default = on]
 * ``console_logging``: turn on/off logging to stdout [optional, default = off]
 * ``xml_report``: turn on/off xml/jtl report [optional, default = off]
+* ``drop_expired``: drop elapsed requests which finish after ``run_time``
 * ``results_database``: database connection string [optional]
 * ``post_run_script``: hook to call a script at test completion [optional]
 

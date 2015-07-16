@@ -15,8 +15,8 @@ import reportwriterxml
 
 
 
-def output_results(results_dir, results_file, run_time, rampup, ts_interval, user_group_configs=None, xml_reports=False):
-    results = Results(results_dir + results_file, run_time)
+def output_results(results_dir, results_file, run_time, rampup, ts_interval, user_group_configs=None, xml_reports=False, drop_expired=True):
+    results = Results(results_dir + results_file, run_time, drop_expired)
 
     report = reportwriter.Report(results_dir)
 
@@ -240,9 +240,10 @@ def output_results(results_dir, results_file, run_time, rampup, ts_interval, use
 
 
 class Results(object):
-    def __init__(self, results_file_name, run_time):
+    def __init__(self, results_file_name, run_time, drop_expired=True):
         self.results_file_name = results_file_name
         self.run_time = run_time
+        self.drop_expired = drop_expired
         self.total_transactions = 0
         self.total_errors = 0
         self.uniq_timer_names = set()
@@ -289,7 +290,7 @@ class Results(object):
 
             r = ResponseStats(request_num, elapsed_time, epoch_secs, user_group_name, trans_time, error, custom_timers)
 
-            if elapsed_time < self.run_time:  # drop all times that appear after the last request was sent (incomplete interval)
+            if not self.drop_expired or elapsed_time < self.run_time:  # drop all times that appear after the last request was sent (incomplete interval)
                 resp_stats_list.append(r)
 
             if error != '':

@@ -45,7 +45,11 @@ def main():
     parser.add_option('-r', '--results', dest='results_dir', help='results directory to reprocess')
     parser.add_option('-b', '--bind-addr', dest='bind_addr', help='rpc bind address', default='localhost')
     parser.add_option('-d', '--directory', dest='projects_dir', help='directory containing project folder', default='.')
+    parser.add_option('-g', '--groups', dest='user_groups', help='User groups to run, separated by comma', default=None)
     cmd_opts, args = parser.parse_args()
+
+    if cmd_opts.user_groups:
+        cmd_opts.user_groups = set(cmd_opts.user_groups.split(','))
 
     try:
         project_name = args[0]
@@ -186,6 +190,7 @@ def configure(project_name, cmd_opts, config_file=None):
     if config_file is None:
         config_file = '%s/%s/config.cfg' % (cmd_opts.projects_dir, project_name)
     config.read(config_file)
+    user_group_set = cmd_opts.user_groups
     for section in config.sections():
         if section == 'global':
             run_time = config.getint(section, 'run_time')
@@ -218,11 +223,12 @@ def configure(project_name, cmd_opts, config_file=None):
             except ConfigParser.NoOptionError:
                 drop_expired = True
         else:
-            threads = config.getint(section, 'threads')
-            script = config.get(section, 'script')
-            user_group_name = section
-            ug_config = UserGroupConfig(threads, user_group_name, script)
-            user_group_configs.append(ug_config)
+            if not user_group_set or section in cmd_opts.user_groups:
+                threads = config.getint(section, 'threads')
+                script = config.get(section, 'script')
+                user_group_name = section
+                ug_config = UserGroupConfig(threads, user_group_name, script)
+                user_group_configs.append(ug_config)
 
     return (run_time, rampup, results_ts_interval, console_logging, progress_bar, results_database, post_run_script, xml_report, user_group_configs, drop_expired)
 
